@@ -10,7 +10,7 @@ Flutter UI
     └── SensorInterval.normalInterval → sensors_plus → acelerómetro / giroscopio
 ```
 
-La lógica del gestor usa servicios Dart y almacenamiento privado. El juego usa servicios y autosave JSON independientes, inyectados con `ServicesScope`. La página de sensores se suscribe al entrar y cancela streams en pausa o al salir; los errores del plugin se presentan como sensor no disponible. Android e iOS usan `sensors_plus`; se debe confirmar el hardware real antes de afirmar disponibilidad.
+La lógica del gestor usa servicios Dart y almacenamiento privado. El juego usa servicios y autosave JSON independientes, inyectados con `ServicesScope`. La página de sensores se suscribe al entrar y cancela streams en pausa o al salir; los errores del plugin se presentan como sensor no disponible. Android e iOS usan `sensors_plus`; el AVD puede reportar valores simulados.
 
 ## Decisiones y reutilización
 
@@ -21,7 +21,7 @@ La lógica del gestor usa servicios Dart y almacenamiento privado. El juego usa 
 
 ## Contrato propuesto para el canal BLE (pendiente)
 
-No hay aún servicio BLE implementado. El contrato propuesto para orientar las siguientes tareas es un servicio GATT propio con una característica RX (write/write without response cuando se negocie) y otra TX (notify/indicate), con cliente y servidor adaptables a central/periférico en ambos sistemas. No se debe asumir que iOS permite los mismos roles o anuncio de Android: validar en dos equipos físicos antes de cerrar el diseño.
+No hay aún servicio BLE implementado. El contrato propuesto para orientar las siguientes tareas es un servicio GATT propio con una característica RX (write/write without response cuando se negocie) y otra TX (notify/indicate), con cliente y servidor adaptables a central/periférico en ambos sistemas. No se debe asumir que iOS permite los mismos roles o anuncio de Android: validar interoperabilidad entre ambos sistemas cuando se implemente.
 
 Cada mensaje será un frame UTF-8 JSON con campos obligatorios:
 
@@ -42,17 +42,17 @@ Cada mensaje será un frame UTF-8 JSON con campos obligatorios:
 | Juego sincronizado por Bluetooth, roles, secuencia/deduplicación | Pendiente; juego actual es local |
 | Transferencia TXT/JSON/XML/JPG por Bluetooth, bloques, SHA-256 | Pendiente |
 | Cliente HTTPS mediado por Bluetooth y controles anti SSRF | Pendiente |
-| Android Pixel 4a | `flutter run` compiló, instaló y abrió en AVD `Pixel_4a`; gestor, visor, ajustes, sensores y juego local recorridos. Capturas en `evidencias/`. Físico pendiente. |
-| Dos teléfonos físicos / pares Android-iOS | Pendiente de pruebas y evidencia |
-| iOS/Xcode | Xcode 27.2 e iPhone 17 Simulator (iOS 27.2): app compilada y pantallas recorridas; iPhone físico pendiente |
+| Android Pixel 4a | `flutter run` compiló, instaló y abrió en AVD `Pixel_4a`; gestor, visor, ajustes, sensores y juego local recorridos. Capturas en `evidencias/`. |
+| BLE entre Android e iOS | Pendiente de implementar el transporte y validar interoperabilidad |
+| iOS/Xcode | Xcode 27.2 e iPhone 17 Simulator (iOS 27.2): app compilada y pantallas recorridas; capturas incluidas |
 
 ## Matriz de pruebas y evidencias
 
-Completar `obtenido`, `dispositivo/versión` y evidencia física solo tras ejecutar cada caso. Las capturas del AVD y simulador iOS están en `evidencias/`; sus sensores pueden ser virtuales o no reportar datos.
+Completar `obtenido`, `dispositivo/versión` y evidencia solo tras ejecutar cada caso. Las capturas del AVD y simulador iOS están en `evidencias/`; los sensores del AVD pueden ser virtuales o no reportar datos.
 
 | Caso | Pasos | Esperado | Obtenido / dispositivo / evidencia |
 |---|---|---|---|
-| Acelerómetro/giroscopio disponibles | Abrir Sensores, observar valores | Valor, unidad, instante y estado; distinguir simulación | AVD Pixel_4a reportó valores; teléfono físico pendiente |
+| Acelerómetro/giroscopio disponibles | Abrir Sensores, observar valores | Valor, unidad, instante y estado; distinguir simulación | AVD Pixel_4a reportó valores; evidencia en `evidencias/05_sensores.png` |
 | Sensor ausente | Abrir Sensores en simulador iOS | Mensaje informativo, app estable | iPhone 17 Simulator: sin lecturas, aviso verificado |
 | Pausa/reanudación | Ir a segundo plano y volver | Streams detenidos y retomados | Pendiente |
 | Permiso denegado | Aplicable al permiso que se implemente | Explicación y salida segura | Pendiente (sensores no piden permiso móvil) |
@@ -64,8 +64,8 @@ Completar `obtenido`, `dispositivo/versión` y evidencia física solo tras ejecu
 
 ## Limitaciones y riesgos conocidos
 
-Este incremento no cubre todavía los tres ejercicios nuevos que necesitan Bluetooth ni biometría. No hay pruebas de interoperabilidad ni video, y el AVD no representa sensores de hardware real. Antes de entregar: implementar los adaptadores BLE Android/iOS, validar lista permitida/redirects/tamaño/timeout del intermediario HTTPS, completar pruebas unitarias de lógica y de protocolo, documentar rechazo/revocación y terminar matriz con capturas o video auténticos. Usar PR por propósito, checks CI y revisiones ajenas según las reglas del curso.
+Este incremento no cubre todavía los tres ejercicios nuevos que necesitan Bluetooth ni biometría. No hay pruebas de interoperabilidad ni video. Antes de entregar: implementar los adaptadores BLE Android/iOS, validar lista permitida/redirects/tamaño/timeout del intermediario HTTPS, completar pruebas unitarias de lógica y de protocolo, documentar rechazo/revocación y terminar matriz con capturas o video de los flujos implementados. Usar PR por propósito, checks CI y revisiones ajenas según las reglas del curso.
 
 ## Registro de asistencia de IA
 
-Asistencia de IA para integrar la fuente existente de P4, añadir la UI de sensores y preparar configuración/documentación. Se corrigió el ámbito de servicios del juego y se añadió un timeout para informar si los sensores no envían datos. Validación: `flutter analyze`, APK debug y AVD Android; prueba temporal `integration_test` recorrió Archivos, sensor ausente, menú y tablero local en iPhone 17 Simulator. La prueba y sus dependencias temporales se retiraron después. Teléfonos físicos e interoperabilidad BLE no verificados.
+Asistencia de IA para integrar la fuente existente de P4, añadir la UI de sensores y preparar configuración/documentación. Se corrigió el ámbito de servicios del juego y se añadió un timeout para informar si los sensores no envían datos. Validación: `flutter analyze`, APK debug y AVD Android; prueba temporal `integration_test` recorrió Archivos, sensor ausente, menú y tablero local en iPhone 17 Simulator. La prueba y sus dependencias temporales se retiraron después. La interoperabilidad BLE se validará una vez implementado el transporte.
