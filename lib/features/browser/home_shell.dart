@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../sensors/sensors_page.dart';
-import '../game/core/services.dart' as game;
 import '../game/ui/home_screen.dart' as game_ui;
 
 import '../../main.dart';
@@ -19,7 +18,6 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
-  late final Future<game.AppServices> _gameServices = game.AppServices.create();
   final _jump = ValueNotifier<String?>(null);
 
   static const _dests = [
@@ -41,14 +39,7 @@ class _HomeShellState extends State<HomeShell> {
       LibraryView(services: s, recents: true, onOpenFolder: _openFolder),
       SettingsView(services: s),
       const SensorsPage(),
-      FutureBuilder<game.AppServices>(
-        future: _gameServices,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) return const Center(child: Text('No se pudo iniciar el juego.'));
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-          return game.ServicesScope(services: snapshot.data!, child: const game_ui.HomeScreen());
-        },
-      ),
+      const game_ui.HomeScreen(),
     ]);
     return LayoutBuilder(builder: (context, c) {
       final wide = c.maxWidth >= 720;

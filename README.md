@@ -18,8 +18,46 @@ El script restaura paquetes, inicia el AVD `Pixel_4a` si hace falta, espera el a
 
 - Gestor de archivos de Práctica 4: espacio privado, selector del sistema, importación/exportación, favoritos, recientes y visores de texto, JSON, XML e imágenes.
 - Juego Circuito Guinda de Práctica 4: modos clásico y reto, partidas guardadas y recuperación de autosave local.
-- Pantalla de sensores: acelerómetro (m/s²) y giroscopio (rad/s), lecturas físicas con hora de muestra, frecuencia normal del sistema, aviso de error y cancelación/reinicio de suscripciones al pausar/reanudar. Inclinación registra una interacción visible.
+- Pantalla de sensores: acelerómetro (m/s²) y giroscopio (rad/s), lecturas reportadas por el sistema con instante, frecuencia normal, aviso de error y cancelación/reinicio de suscripciones al pausar/reanudar. La app aclara que el emulador puede simular valores. Inclinación registra una interacción visible.
 - Temas guinda IPN y azul ESCOM con claro/oscuro del sistema, heredados del gestor.
+
+## Evidencia de ejecución
+
+Capturas tomadas el 15 de noviembre de 2026 desde Android Studio Emulator, AVD `Pixel_4a` (1080×2340). Se revisó cada PNG para confirmar que muestra la pantalla completa, sin carga pendiente ni error. Son evidencia de ejecución en el emulador; sus sensores pueden ser virtuales y no sustituyen las pruebas en teléfono físico.
+
+### Gestor y visores
+
+![Gestor de archivos en Documentos de la app](evidencias/01_archivos.png)
+
+![Carpeta de ejemplos](evidencias/02_archivos_ejemplos.png)
+
+![Archivos JSON, Markdown, TXT y XML disponibles en el gestor](evidencias/03_documentos_formatos.png)
+
+![Visor de Markdown](evidencias/04_visor_texto.png)
+
+![Visor con formato y resaltado JSON](evidencias/13_visor_json.png)
+
+![Visor con formato y resaltado XML](evidencias/15_visor_xml.png)
+
+![Carpeta de imágenes del gestor](evidencias/10_imagenes.png)
+
+![Visor de imagen con control de rotación](evidencias/11_visor_imagen.png)
+
+### Temas y sensores
+
+![Selector de temas Guinda IPN y Azul ESCOM](evidencias/14_ajustes_tema.png)
+
+![Acelerómetro y giroscopio reportados por el AVD, con unidades e instante](evidencias/05_sensores.png)
+
+### Juego local de Práctica 4
+
+![Menú de Circuito Guinda](evidencias/06_juego_local.png)
+
+![Tablero de una partida local](evidencias/07_partida_local.png)
+
+![Partida local después de girar una pieza; contador de movimientos actualizado](evidencias/08_movimiento_local.png)
+
+Estas pantallas prueban los flujos disponibles en este incremento. **No demuestran** una partida sincronizada por Bluetooth, transferencia entre dispositivos, autenticación biométrica ni consulta web mediada: esas funciones siguen pendientes de implementación y por eso no tienen capturas de éxito.
 
 ## Estado de los requisitos de Práctica 6
 
@@ -57,7 +95,7 @@ Completar el resultado, dispositivo/versión y evidencia solo después de ejecut
 
 | Caso | Pasos | Resultado esperado | Resultado / dispositivo / evidencia |
 |---|---|---|---|
-| Acelerómetro y giroscopio disponibles | Abrir Sensores y mover el dispositivo | Lectura física, unidad, instante y estado | AVD Pixel_4a: arranque probado; lectura de hardware pendiente |
+| Acelerómetro y giroscopio disponibles | Abrir Sensores y observar valores | Lectura, unidad, instante y estado; distinguir valores simulados | AVD Pixel_4a reportó valores; teléfono físico pendiente |
 | Sensor ausente | Desactivar o simular ausencia | Mensaje informativo, app estable | Pendiente |
 | Pausa y reanudación | Enviar la app a segundo plano y volver | Streams detenidos y retomados | Implementado; prueba manual pendiente |
 | Permiso denegado | Probar permisos aplicables | Explicación y salida segura | Sensores no requieren permiso móvil; permisos BLE aún no implementados |
@@ -81,9 +119,10 @@ Completar el resultado, dispositivo/versión y evidencia solo después de ejecut
 
 - `flutter analyze`: sin incidencias.
 - `flutter build apk --debug`: exitoso; artefacto local en `build/app/outputs/flutter-apk/app-debug.apk` (no se incluye en el repositorio).
-- `./scripts/run_pixel4a.sh`: compiló, instaló y abrió la app en el AVD `Pixel_4a` de este equipo.
+- `./scripts/run_pixel4a.sh`: compiló, instaló y abrió la app en el AVD `Pixel_4a` de este equipo. En la prueba manual se recorrieron gestor, ejemplos, visor Markdown, visor JSON, visor de imagen, ajustes de tema, sensores, menú del juego, inicio de partida y rotación de una pieza. Se corrigió un error al abrir la ruta del tablero: el proveedor de servicios del juego ahora queda por encima del navegador principal.
 - `flutter test`: no ejecutado en este avance.
-- iOS y dispositivos físicos: no verificados.
+- No se añadió ninguna prueba temporal ni dependencia temporal; las pruebas de flujo se hicieron con el emulador y `adb`.
+- iOS: no ejecutable aquí porque está seleccionado Xcode Command Line Tools y `simctl` no está disponible. Teléfono físico/segundo dispositivo: no verificados.
 - Se usó asistencia de IA para integrar la fuente de la Práctica 4, añadir la pantalla de sensores y preparar configuración/documentación. El estudiante debe revisar el código, ejecutar las pruebas pendientes y reportar cualquier error encontrado.
 
 ## Plataformas

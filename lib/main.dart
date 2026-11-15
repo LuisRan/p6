@@ -8,6 +8,7 @@ import 'core/services/prefs_store.dart';
 import 'core/services/seed_data.dart';
 import 'core/services/thumbnail_cache.dart';
 import 'features/browser/home_shell.dart';
+import 'features/game/core/services.dart' as game;
 
 /// Servicios compartidos; se crean una vez en [main].
 class AppServices {
@@ -33,16 +34,20 @@ Future<void> main() async {
   }
   final services = AppServices(prefs, FileService(),
       ThumbnailCache(Directory('${cache.path}/thumbs')), docs, support);
-  runApp(GestorApp(services: services));
+  final gameServices = await game.AppServices.create();
+  runApp(GestorApp(services: services, gameServices: gameServices));
 }
 
 class GestorApp extends StatelessWidget {
-  const GestorApp({super.key, required this.services});
+  const GestorApp({super.key, required this.services, required this.gameServices});
   final AppServices services;
+  final game.AppServices gameServices;
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
+    return game.ServicesScope(
+      services: gameServices,
+      child: ListenableBuilder(
       listenable: services.prefs,
       builder: (context, _) {
         final t = services.prefs.theme;
@@ -55,6 +60,7 @@ class GestorApp extends StatelessWidget {
           home: HomeShell(services: services),
         );
       },
+      ),
     );
   }
 }

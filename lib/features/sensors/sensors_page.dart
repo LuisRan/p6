@@ -24,7 +24,7 @@ class _SensorsPageState extends State<SensorsPage> with WidgetsBindingObserver {
       if (!mounted) return;
       setState(() {
         _a = e;
-        _status = 'Lectura física activa';
+        _status = 'Sensor del sistema disponible';
         if (e.x.abs() > 7.5 && !_tilted) { _gestures++; _tilted = true; }
         if (e.x.abs() < 5) _tilted = false;
       });
@@ -58,7 +58,7 @@ class _SensorsPageState extends State<SensorsPage> with WidgetsBindingObserver {
         Text('Interacción del juego', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8), const Text('Inclina el teléfono hacia un lado para registrar el movimiento.'),
         Text('Inclinaciones detectadas: $_gestures', style: Theme.of(context).textTheme.headlineSmall),
-        Text('Los valores son lecturas físicas del dispositivo; no son datos simulados.', style: Theme.of(context).textTheme.bodySmall),
+        Text('Lecturas reportadas por el sistema. En un emulador pueden ser simuladas; confirma los sensores en un teléfono físico.', style: Theme.of(context).textTheme.bodySmall),
       ]))),
     ]),
   );
