@@ -59,9 +59,21 @@ Capturas tomadas el 15 de noviembre de 2026 desde Android Studio Emulator, AVD `
 
 Estas pantallas prueban los flujos disponibles en este incremento. **No demuestran** una partida sincronizada por Bluetooth, transferencia entre dispositivos, autenticación biométrica ni consulta web mediada: esas funciones siguen pendientes de implementación y por eso no tienen capturas de éxito.
 
+### Simulador iOS
+
+La app también se ejecutó en iPhone 17 Simulator con iOS 27.2 usando Xcode 27.2. Para estas capturas se usó temporalmente `integration_test`; tanto la prueba como sus dependencias temporales se retiraron después. El simulador no entregó lecturas de acelerómetro/giroscopio, así que la pantalla muestra el estado de ausencia de datos. Esto no sustituye probar sensores en un iPhone físico.
+
+![Gestor de archivos ejecutándose en iPhone 17 Simulator](evidencias/ios/ios_archivos.png)
+
+![Estado sin lecturas de sensores en el simulador iOS](evidencias/ios/ios_sensores.png)
+
+![Menú de Circuito Guinda en iPhone 17 Simulator](evidencias/ios/ios_juego.png)
+
+![Tablero local de Circuito Guinda en iPhone 17 Simulator](evidencias/ios/ios_partida_local.png)
+
 ## Estado de los requisitos de Práctica 6
 
-El gestor y el juego anterior se integraron y la lectura de sensores es real. `flutter analyze`, compilación APK y arranque en el AVD Pixel_4a quedaron verificados. Las funciones nuevas que requieren comunicación entre teléfonos aún están pendientes de implementación: BLE interoperable Android/iOS para juego y transferencia; biometría; y cliente web mediado por Bluetooth. No se declara una sesión física ni evidencia de iOS que no se haya realizado. La arquitectura y matriz de pendientes/pruebas están en [`README for IAS/README.md`](README%20for%20IAS/README.md). Antes de entregar hay que probar con dos equipos, recopilar evidencia real y registrar el resultado por par de dispositivos.
+El gestor y el juego anterior se integraron y la lectura de sensores está conectada al sistema. `flutter analyze`, compilación APK y arranque en el AVD Pixel_4a quedaron verificados. La app también compiló y se recorrió en el simulador iPhone 17 de Xcode 27.2. Las funciones nuevas que requieren comunicación entre teléfonos aún están pendientes de implementación: BLE interoperable Android/iOS para juego y transferencia; biometría; y cliente web mediado por Bluetooth. No se declara una sesión Bluetooth física ni ejecución en un iPhone físico. La arquitectura y matriz de pendientes/pruebas están en [`README for IAS/README.md`](README%20for%20IAS/README.md). Antes de entregar hay que probar con dos equipos, recopilar evidencia real y registrar el resultado por par de dispositivos.
 
 ### Arquitectura y decisiones actuales
 
@@ -91,12 +103,12 @@ Frame JSON UTF-8 propuesto:
 
 ### Matriz de pruebas y evidencias
 
-Completar el resultado, dispositivo/versión y evidencia solo después de ejecutar cada caso. No se han hecho pruebas automatizadas ni pruebas con segundo teléfono.
+Completar el resultado, dispositivo/versión y evidencia solo después de ejecutar cada caso. No se ejecutaron las pruebas automatizadas permanentes ni pruebas con segundo teléfono; sí se usó una prueba temporal para capturar flujos en el simulador iOS y luego se eliminó.
 
 | Caso | Pasos | Resultado esperado | Resultado / dispositivo / evidencia |
 |---|---|---|---|
 | Acelerómetro y giroscopio disponibles | Abrir Sensores y observar valores | Lectura, unidad, instante y estado; distinguir valores simulados | AVD Pixel_4a reportó valores; teléfono físico pendiente |
-| Sensor ausente | Desactivar o simular ausencia | Mensaje informativo, app estable | Pendiente |
+| Sensor ausente | Abrir Sensores en simulador iOS | Mensaje informativo, app estable | iPhone 17 Simulator: sin lecturas, aviso de ausencia verificado |
 | Pausa y reanudación | Enviar la app a segundo plano y volver | Streams detenidos y retomados | Implementado; prueba manual pendiente |
 | Permiso denegado | Probar permisos aplicables | Explicación y salida segura | Sensores no requieren permiso móvil; permisos BLE aún no implementados |
 | Juego BLE, turno y duplicado | Requiere transporte implementado | Una jugada por secuencia | Pendiente |
@@ -104,7 +116,7 @@ Completar el resultado, dispositivo/versión y evidencia solo después de ejecut
 | Hash incorrecto, cancelar y desconectar | Requiere transferencia BLE | Temporal descartado; estado fallido/cancelado | Pendiente |
 | Consulta web con B sin Internet | Requiere proxy BLE en A | Red solo a través de A; caché identificada | Pendiente |
 | Android en Pixel 4a | Ejecutar `./scripts/run_pixel4a.sh` | Instala y abre la app | Verificado en AVD Pixel_4a de este equipo; físico pendiente |
-| iOS | Compilar y ejecutar con Xcode | Evidencia real en iOS 15+ | No verificado |
+| iOS | Ejecutar en iPhone 17 Simulator | UI compartida inicia y muestra pantallas | Xcode 27.2 / iOS 27.2; iPhone físico pendiente |
 
 ### Pendientes para completar la práctica
 
@@ -121,14 +133,14 @@ Completar el resultado, dispositivo/versión y evidencia solo después de ejecut
 - `flutter build apk --debug`: exitoso; artefacto local en `build/app/outputs/flutter-apk/app-debug.apk` (no se incluye en el repositorio).
 - `./scripts/run_pixel4a.sh`: compiló, instaló y abrió la app en el AVD `Pixel_4a` de este equipo. En la prueba manual se recorrieron gestor, ejemplos, visor Markdown, visor JSON, visor de imagen, ajustes de tema, sensores, menú del juego, inicio de partida y rotación de una pieza. Se corrigió un error al abrir la ruta del tablero: el proveedor de servicios del juego ahora queda por encima del navegador principal.
 - `flutter test`: no ejecutado en este avance.
-- No se añadió ninguna prueba temporal ni dependencia temporal; las pruebas de flujo se hicieron con el emulador y `adb`.
-- iOS: no ejecutable aquí porque está seleccionado Xcode Command Line Tools y `simctl` no está disponible. Teléfono físico/segundo dispositivo: no verificados.
+- En Android, los flujos se recorrieron manualmente con el emulador y `adb`. Para capturar iOS se usó una prueba temporal y dependencias SDK, retiradas después.
+- iOS: `flutter drive` temporal ejecutado en iPhone 17 Simulator (iOS 27.2 / Xcode 27.2); capturas revisadas y guardadas. Teléfono físico no verificado.
 - Se usó asistencia de IA para integrar la fuente de la Práctica 4, añadir la pantalla de sensores y preparar configuración/documentación. El estudiante debe revisar el código, ejecutar las pruebas pendientes y reportar cualquier error encontrado.
 
 ## Plataformas
 
 - Android: `minSdk 24`; no se solicitan permisos de almacenamiento global. Los documentos externos se eligen con el selector del sistema.
-- iOS: despliegue mínimo 15.0 configurado por Flutter. El arranque aquí no sustituye una compilación y verificación real con Xcode.
+- iOS: despliegue mínimo 15.0. Build y recorrido básico verificados en iPhone 17 Simulator (iOS 27.2 / Xcode 27.2); falta verificar hardware físico.
 - Bluetooth todavía no está habilitado; por ello el manifiesto no pide permisos Bluetooth ni ubicación innecesarios.
 
 ## Desarrollo
@@ -143,10 +155,10 @@ Flutter 3.47.9 / Dart 3.13.7. Dependencias directas adicionales a Flutter SDK: `
 
 ## English
 
-Flutter app for Android 24+ and iOS 15+, combining the Practice 4 file manager and Circuito Guinda game with physical accelerometer and gyroscope readings. For a clean Android checkout, install Flutter 3.47.9, Android Studio/SDK, and an AVD named `Pixel_4a`, then run `./scripts/run_pixel4a.sh`. Dependencies are locked in `pubspec.lock`; machine-specific SDK paths and signing keys are not committed.
+Flutter app for Android 24+ and iOS 15+, combining the Practice 4 file manager and Circuito Guinda game with accelerometer and gyroscope readings reported by the operating system. For a clean Android checkout, install Flutter 3.47.9, Android Studio/SDK, and an AVD named `Pixel_4a`, then run `./scripts/run_pixel4a.sh`. Dependencies are locked in `pubspec.lock`; machine-specific SDK paths and signing keys are not committed.
 
-The Practice 6 BLE multiplayer/file transfer, biometric protection, and Bluetooth-relayed HTTPS client are not implemented yet. No physical-device or iOS result is claimed. See [`README for IAS/README.md`](README%20for%20IAS/README.md) for architecture, protocol proposal, limitations, and the verification matrix.
+The app was built and exercised in an iPhone 17 simulator (iOS 27.2 / Xcode 27.2); no physical iPhone result is claimed. The Practice 6 BLE multiplayer/file transfer, biometric protection, and Bluetooth-relayed HTTPS client are not implemented yet. See [`README for IAS/README.md`](README%20for%20IAS/README.md) for architecture, protocol proposal, limitations, and the verification matrix.
 
 ## Uso de IA
 
-Se usó asistencia de IA para integrar código de la Práctica 4, añadir la pantalla de sensores y redactar configuración/documentación inicial. Se verificará con análisis, pruebas automatizadas y compilación; los resultados pendientes se deben completar y declarar por quien entregue.
+Se usó asistencia de IA para integrar código de la Práctica 4, añadir/ajustar la pantalla de sensores y preparar configuración/documentación. Se corrigió el ámbito de servicios para que las rutas del juego local funcionen. Verificado con `flutter analyze`, APK Android y recorrido con prueba temporal en iPhone 17 Simulator; esa prueba y sus dependencias se retiraron. Las pruebas automatizadas permanentes y la verificación en teléfonos físicos siguen pendientes.

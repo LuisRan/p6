@@ -36,24 +36,24 @@ Cada mensaje será un frame UTF-8 JSON con campos obligatorios:
 | Requisito | Estado en este checkout |
 |---|---|
 | Gestor y juego P4 | Integrados; autosave local del juego |
-| Acelerómetro y giroscopio | Lecturas reportadas por el sistema, valor/unidad/instante/estado e interacción básica. En emulador pueden ser simuladas. |
-| Ausencia / pausa / reanudación sensores | Error mostrado; streams se cancelan y se vuelven a abrir |
+| Acelerómetro y giroscopio | Lecturas reportadas por el sistema, valor/unidad/instante/estado e interacción básica. En simulador pueden ser virtuales o no estar disponibles. |
+| Ausencia / pausa / reanudación sensores | Timeout/error informativo; streams se cancelan y se vuelven a abrir |
 | Biometría al proteger acción de archivo | Pendiente |
 | Juego sincronizado por Bluetooth, roles, secuencia/deduplicación | Pendiente; juego actual es local |
 | Transferencia TXT/JSON/XML/JPG por Bluetooth, bloques, SHA-256 | Pendiente |
 | Cliente HTTPS mediado por Bluetooth y controles anti SSRF | Pendiente |
 | Android Pixel 4a | `flutter run` compiló, instaló y abrió en AVD `Pixel_4a`; gestor, visor, ajustes, sensores y juego local recorridos. Capturas en `evidencias/`. Físico pendiente. |
 | Dos teléfonos físicos / pares Android-iOS | Pendiente de pruebas y evidencia |
-| iOS/Xcode | No ejecutable en este entorno: Xcode no está seleccionado y `simctl` no está disponible |
+| iOS/Xcode | Xcode 27.2 e iPhone 17 Simulator (iOS 27.2): app compilada y pantallas recorridas; iPhone físico pendiente |
 
 ## Matriz de pruebas y evidencias
 
-Completar `obtenido`, `dispositivo/versión` y evidencia física solo tras ejecutar cada caso. Las capturas del AVD están en `evidencias/`; sus lecturas de sensores pueden ser virtuales.
+Completar `obtenido`, `dispositivo/versión` y evidencia física solo tras ejecutar cada caso. Las capturas del AVD y simulador iOS están en `evidencias/`; sus sensores pueden ser virtuales o no reportar datos.
 
 | Caso | Pasos | Esperado | Obtenido / dispositivo / evidencia |
 |---|---|---|---|
 | Acelerómetro/giroscopio disponibles | Abrir Sensores, observar valores | Valor, unidad, instante y estado; distinguir simulación | AVD Pixel_4a reportó valores; teléfono físico pendiente |
-| Sensor ausente | Desactivar/simular ausencia | Mensaje informativo, app estable | Pendiente |
+| Sensor ausente | Abrir Sensores en simulador iOS | Mensaje informativo, app estable | iPhone 17 Simulator: sin lecturas, aviso verificado |
 | Pausa/reanudación | Ir a segundo plano y volver | Streams detenidos y retomados | Pendiente |
 | Permiso denegado | Aplicable al permiso que se implemente | Explicación y salida segura | Pendiente (sensores no piden permiso móvil) |
 | Juego local | Abrir Juego, Modo Clásico y girar pieza | Tablero y contador de movimiento | AVD Pixel_4a: abierto y un giro aplicado; no es sesión Bluetooth |
@@ -68,4 +68,4 @@ Este incremento no cubre todavía los tres ejercicios nuevos que necesitan Bluet
 
 ## Registro de asistencia de IA
 
-Asistencia de IA para integrar la fuente existente de P4, añadir la UI de sensores y preparar configuración/documentación. También se corrigió el ámbito de servicios del juego para que las rutas de partida reciban el proveedor usado por el menú. Validación: `flutter analyze` sin incidencias; `flutter build apk --debug` exitoso; app abierta; gestor, JSON, imagen, ajustes, sensores y juego local recorridos. No se ejecutaron pruebas automatizadas ni se verificó teléfono físico/iOS. No se añadieron pruebas temporales ni dependencias temporales. Revisar el código y completar verificaciones restantes antes de la entrega.
+Asistencia de IA para integrar la fuente existente de P4, añadir la UI de sensores y preparar configuración/documentación. Se corrigió el ámbito de servicios del juego y se añadió un timeout para informar si los sensores no envían datos. Validación: `flutter analyze`, APK debug y AVD Android; prueba temporal `integration_test` recorrió Archivos, sensor ausente, menú y tablero local en iPhone 17 Simulator. La prueba y sus dependencias temporales se retiraron después. Teléfonos físicos e interoperabilidad BLE no verificados.
