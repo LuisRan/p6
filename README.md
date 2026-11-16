@@ -19,6 +19,8 @@ El script restaura paquetes, inicia el AVD `Pixel_4a` si hace falta, espera el a
 - Gestor de archivos de Práctica 4: espacio privado, selector del sistema, importación/exportación, favoritos, recientes y visores de texto, JSON, XML e imágenes.
 - Juego Circuito Guinda de Práctica 4: modos clásico y reto, partidas guardadas y recuperación de autosave local.
 - Pantalla de sensores: acelerómetro (m/s²) y giroscopio (rad/s), lecturas reportadas por el sistema con instante, frecuencia normal, aviso de error y cancelación/reinicio de suscripciones al pausar/reanudar. La app aclara que el emulador puede simular valores. Inclinación registra una interacción visible.
+- Protección biométrica del borrado: usa el diálogo de autenticación del sistema mediante `local_auth`, con huella y credencial de pantalla como alternativa.
+- Consulta web en modo de simulación: presenta roles B/A, allowlist, estado, tiempo, historial, favoritos y caché usando respuestas locales de ejemplo; no ejecuta HTTPS ni Bluetooth.
 - Temas guinda IPN y azul ESCOM con claro/oscuro del sistema, heredados del gestor.
 
 ## Evidencia de ejecución
@@ -57,7 +59,21 @@ Capturas tomadas el 15 de noviembre de 2026 desde Android Studio Emulator, AVD `
 
 ![Partida local después de girar una pieza; contador de movimientos actualizado](evidencias/08_movimiento_local.png)
 
-Estas pantallas prueban los flujos disponibles en este incremento. **No demuestran** una partida sincronizada por Bluetooth, transferencia entre dispositivos, autenticación biométrica ni consulta web mediada: esas funciones siguen pendientes de implementación y por eso no tienen capturas de éxito.
+Estas pantallas prueban los flujos locales disponibles. **No demuestran** una partida sincronizada por Bluetooth, transferencia entre dispositivos ni una consulta web que viaje por un relay Bluetooth real; esos transportes siguen pendientes.
+
+### Biometría y consulta web simulada en Android
+
+Recorrido en el AVD `Pixel_4a` de Android Studio (Android 17/API 37). Se enroló la huella virtual del emulador y se configuró el PIN del dispositivo como alternativa. La autenticación del sistema protege la acción de eliminar; el AVD aprobó el flujo con la huella virtual. Android oculta el diálogo biométrico en las capturas del sistema, por eso se incluye la confirmación previa y el estado posterior a la autorización.
+
+![Consulta HTTPS de ejemplo entregada por el relay A simulado](evidencias/16_consulta_web_respuesta.png)
+
+![Respuesta identificada como caché cuando el relay A simulado queda sin conexión](evidencias/17_consulta_web_cache.png)
+
+![Confirmación de borrado que informa que después solicitará huella o credencial del dispositivo](evidencias/18_biometria_confirmacion.png)
+
+![Lista de archivos después de autorizar el borrado con la huella virtual del AVD](evidencias/19_biometria_autorizada.png)
+
+La vista web usa fixtures locales para dos rutas HTTPS de JSONPlaceholder y rechaza otros destinos. El estado “A sin Internet” sirve para demostrar el uso de caché en esta simulación; **no** equivale a peticiones HTTPS reales ni a comunicación B→A por Bluetooth.
 
 ### Simulador iOS
 
@@ -73,7 +89,7 @@ La app también se ejecutó en iPhone 17 Simulator con iOS 27.2 usando Xcode 27.
 
 ## Estado de los requisitos de Práctica 6
 
-El gestor y el juego anterior se integraron y la lectura de sensores está conectada al sistema. `flutter analyze`, compilación APK y arranque en el AVD Pixel_4a quedaron verificados. La app también compiló y se recorrió en el simulador iPhone 17 de Xcode 27.2. Las funciones nuevas que requieren comunicación entre dispositivos aún están pendientes de implementación: BLE interoperable Android/iOS para juego y transferencia; biometría; y cliente web mediado por Bluetooth. La arquitectura y matriz de pendientes están en [`README for IAS/README.md`](README%20for%20IAS/README.md).
+El gestor y el juego anterior se integraron y la lectura de sensores está conectada al sistema. `flutter analyze`, compilación APK y arranque en el AVD Pixel_4a quedaron verificados. La app también compiló y se recorrió en el simulador iPhone 17 de Xcode 27.2. La biometría para eliminar está implementada y verificada en el AVD Android. La consulta web disponible es una simulación local; faltan el relay HTTPS real por BLE, el juego sincronizado y la transferencia entre dispositivos. La arquitectura y matriz de pendientes están en [`README for IAS/README.md`](README%20for%20IAS/README.md).
 
 ### Arquitectura y decisiones actuales
 
@@ -81,8 +97,9 @@ El gestor y el juego anterior se integraron y la lectura de sensores está conec
 Flutter UI
 ├── Gestor P4 (lib/core, lib/features/browser, viewer, library, settings)
 ├── Circuito Guinda P4 (lib/features/game/{core,game,saves,ui})
-└── Sensores (lib/features/sensors)
-    └── SensorInterval.normalInterval → sensors_plus → acelerómetro / giroscopio
+├── Sensores (lib/features/sensors) → sensors_plus
+├── Protección del borrado → local_auth
+└── Consulta web simulada (lib/features/web) → fixtures HTTPS locales; relay BLE pendiente
 ```
 
 Se reutilizó el gestor y Circuito Guinda de la Práctica 4: navegación, servicios, persistencia, visores y juego local. El gestor usa almacenamiento privado y el juego conserva servicios/autosave JSON propios. La pantalla de sensores se suscribe al abrirse, cancela las suscripciones al pausar y las retoma al reanudar. `sensors_plus` es el adaptador compartido; en el AVD los valores reportados pueden ser simulados.
@@ -111,26 +128,29 @@ Completar el resultado, dispositivo/versión y evidencia solo después de ejecut
 | Sensor ausente | Abrir Sensores en simulador iOS | Mensaje informativo, app estable | iPhone 17 Simulator: sin lecturas, aviso de ausencia verificado |
 | Pausa y reanudación | Enviar la app a segundo plano y volver | Streams detenidos y retomados | Implementado; prueba manual pendiente |
 | Permiso denegado | Probar permisos aplicables | Explicación y salida segura | Sensores no requieren permiso móvil; permisos BLE aún no implementados |
+| Borrado protegido por biometría | Eliminar un archivo de ejemplo y autenticar | El sistema autoriza con huella o credencial alternativa | AVD Pixel_4a Android 17: huella virtual aceptada; confirmación y resultado en `evidencias/18_biometria_confirmacion.png` y `19_biometria_autorizada.png` |
 | Juego BLE, turno y duplicado | Requiere transporte implementado | Una jugada por secuencia | Pendiente |
 | TXT/JSON/XML/JPG y archivo grande | Requiere transferencia BLE | Integridad antes de guardar final | Pendiente |
 | Hash incorrecto, cancelar y desconectar | Requiere transferencia BLE | Temporal descartado; estado fallido/cancelado | Pendiente |
-| Consulta web con B sin Internet | Requiere proxy BLE en A | Red solo a través de A; caché identificada | Pendiente |
+| Consulta web simulada con A disponible/sin conexión | Consultar el fixture y desconectar A | Estado, ID, tiempo y caché identificada | AVD Pixel_4a: respuesta local y copia de caché; `evidencias/16_consulta_web_respuesta.png` y `17_consulta_web_cache.png` |
+| Consulta web real con B sin Internet | Requiere proxy HTTPS por BLE en A | Red solo a través de A; caché identificada | Pendiente; la pantalla actual usa fixtures locales y no BLE |
 | Android en Pixel 4a | Ejecutar `./scripts/run_pixel4a.sh` | Instala y abre la app | Verificado en AVD Pixel_4a de este equipo |
 | iOS | Ejecutar en iPhone 17 Simulator | UI compartida inicia y muestra pantallas | Xcode 27.2 / iOS 27.2; recorrido y capturas incluidos |
 
 ### Pendientes para completar la práctica
 
-1. Implementar biometría del sistema al proteger una acción sensible del gestor, con alternativa adecuada.
-2. Implementar BLE GATT Android/iOS, negociación de roles/MTU y protocolo versionado, secuenciado y deduplicado para partidas.
-3. Implementar transferencia TXT, JSON, XML y JPG: aceptación explícita, metadatos, límite, bloques/ACK, progreso, cancelación, archivo temporal, SHA-256 e historial persistente.
-4. Implementar cliente HTTPS mediado por Bluetooth con lista de dominios permitidos, validación de redirecciones y bloqueo de destinos locales/privados; límite de bytes, duración y solicitudes, historial, favoritos y caché.
-5. Añadir pruebas de lógica/protocolo; cubrir sensores disponibles/ausentes, ciclo de vida, permisos, desconexión, duplicados, formatos e integridad.
-6. Cuando se implemente BLE, completar pruebas de interoperabilidad entre dispositivos Android/iOS y registrar los pares y resultados.
+1. Implementar BLE GATT Android/iOS, negociación de roles/MTU y protocolo versionado, secuenciado y deduplicado para partidas.
+2. Implementar transferencia TXT, JSON, XML y JPG: aceptación explícita, metadatos, límite, bloques/ACK, progreso, cancelación, archivo temporal, SHA-256 e historial persistente.
+3. Conectar la vista web al relay HTTPS por BLE y hacer peticiones de red reales desde A; conservar validación de allowlist/redirecciones, límites, historial, favoritos y caché.
+4. Añadir pruebas de lógica/protocolo; cubrir sensores disponibles/ausentes, ciclo de vida, rechazo/cancelación biométrica, desconexión BLE, duplicados, formatos e integridad.
+5. Cuando se implemente BLE, completar pruebas de interoperabilidad entre dispositivos Android/iOS y registrar los pares y resultados.
 
 ### Registro de verificación y asistencia
 
 - `flutter analyze`: sin incidencias.
 - `flutter build apk --debug`: exitoso; artefacto local en `build/app/outputs/flutter-apk/app-debug.apk` (no se incluye en el repositorio).
+- Biometría: en AVD Pixel_4a Android 17 se configuró PIN de dispositivo, se enroló la huella virtual y `local_auth` autorizó el borrado de un archivo.
+- Web simulada: se recorrió respuesta JSON con estado 200/ID/tiempo y recuperación etiquetada desde caché con el relay A apagado.
 - `./scripts/run_pixel4a.sh`: compiló, instaló y abrió la app en el AVD `Pixel_4a` de este equipo. En la prueba manual se recorrieron gestor, ejemplos, visor Markdown, visor JSON, visor de imagen, ajustes de tema, sensores, menú del juego, inicio de partida y rotación de una pieza. Se corrigió un error al abrir la ruta del tablero: el proveedor de servicios del juego ahora queda por encima del navegador principal.
 - `flutter test`: no ejecutado en este avance.
 - En Android, los flujos se recorrieron manualmente con el emulador y `adb`. Para capturar iOS se usó una prueba temporal y dependencias SDK, retiradas después.
@@ -151,14 +171,14 @@ flutter analyze
 flutter test
 ```
 
-Flutter 3.47.9 / Dart 3.13.7. Dependencias directas adicionales a Flutter SDK: `file_picker 13.3.2`, `sensors_plus 7.1.1`, `audioplayers 6.8.1`, `path_provider 2.1.6`, `share_plus 13.3.1`, `shared_preferences 2.5.6`, `xml 7.1.0`, `image 4.12.0`, `mime 2.1.0`, `open_filex 5.0.0`, `intl 0.20.3`, `path 1.9.1`. `pubspec.lock` es la referencia completa reproducible.
+Flutter 3.47.9 / Dart 3.13.7. Dependencias directas adicionales a Flutter SDK: `file_picker 13.3.2`, `sensors_plus 7.1.1`, `local_auth 3.0.2`, `audioplayers 6.8.1`, `path_provider 2.1.6`, `share_plus 13.3.1`, `shared_preferences 2.5.6`, `xml 7.1.0`, `image 4.12.0`, `mime 2.1.0`, `open_filex 5.0.0`, `intl 0.20.3`, `path 1.9.1`. `pubspec.lock` es la referencia completa reproducible.
 
 ## English
 
 Flutter app for Android 24+ and iOS 15+, combining the Practice 4 file manager and Circuito Guinda game with accelerometer and gyroscope readings reported by the operating system. For a clean Android checkout, install Flutter 3.47.9, Android Studio/SDK, and an AVD named `Pixel_4a`, then run `./scripts/run_pixel4a.sh`. Dependencies are locked in `pubspec.lock`; machine-specific SDK paths and signing keys are not committed.
 
-The app was built and exercised in an iPhone 17 simulator (iOS 27.2 / Xcode 27.2). The Practice 6 BLE multiplayer/file transfer, biometric protection, and Bluetooth-relayed HTTPS client are not implemented yet. See [`README for IAS/README.md`](README%20for%20IAS/README.md) for architecture, protocol proposal, limitations, and the verification matrix.
+The app was built and exercised in an iPhone 17 simulator (iOS 27.2 / Xcode 27.2). File deletion uses system authentication, verified with the Android emulator's virtual fingerprint. The web view is an offline fixture simulation; BLE multiplayer, file transfer, and a real Bluetooth-relayed HTTPS client remain unimplemented. See [`README for IAS/README.md`](README%20for%20IAS/README.md) for architecture, protocol proposal, limitations, and the verification matrix.
 
 ## Uso de IA
 
-Se usó asistencia de IA para integrar código de la Práctica 4, añadir/ajustar la pantalla de sensores y preparar configuración/documentación. Se corrigió el ámbito de servicios para que las rutas del juego local funcionen. Verificado con `flutter analyze`, APK Android y recorrido con prueba temporal en iPhone 17 Simulator; esa prueba y sus dependencias se retiraron. Las pruebas automatizadas permanentes siguen pendientes.
+Se usó asistencia de IA para integrar código de la Práctica 4, añadir/ajustar sensores, proteger el borrado con `local_auth`, preparar la vista web simulada y actualizar documentación. Se corrigió el ámbito de servicios para que las rutas del juego local funcionen. Verificado con `flutter analyze`, APK Android, huella virtual del AVD y consulta/caché de ejemplo; la prueba temporal iOS y sus dependencias ya se habían retirado. Las pruebas automatizadas permanentes y el relay BLE real siguen pendientes.

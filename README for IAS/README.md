@@ -38,10 +38,11 @@ Cada mensaje será un frame UTF-8 JSON con campos obligatorios:
 | Gestor y juego P4 | Integrados; autosave local del juego |
 | Acelerómetro y giroscopio | Lecturas reportadas por el sistema, valor/unidad/instante/estado e interacción básica. En simulador pueden ser virtuales o no estar disponibles. |
 | Ausencia / pausa / reanudación sensores | Timeout/error informativo; streams se cancelan y se vuelven a abrir |
-| Biometría al proteger acción de archivo | Pendiente |
+| Biometría al proteger acción de archivo | Borrado protegido por `local_auth`; huella virtual del AVD aceptada y credencial del dispositivo ofrecida como alternativa |
+| Consulta web de demostración | Simulación local B→A con allowlist de dos rutas, estado/ID/tiempo, historial, favoritos y caché; no realiza HTTPS ni BLE |
 | Juego sincronizado por Bluetooth, roles, secuencia/deduplicación | Pendiente; juego actual es local |
 | Transferencia TXT/JSON/XML/JPG por Bluetooth, bloques, SHA-256 | Pendiente |
-| Cliente HTTPS mediado por Bluetooth y controles anti SSRF | Pendiente |
+| Cliente HTTPS mediado por Bluetooth y controles anti SSRF | La pantalla demo valida esquema/dominio/ruta con fixtures locales; relay BLE y peticiones HTTPS reales pendientes |
 | Android Pixel 4a | `flutter run` compiló, instaló y abrió en AVD `Pixel_4a`; gestor, visor, ajustes, sensores y juego local recorridos. Capturas en `evidencias/`. |
 | BLE entre Android e iOS | Pendiente de implementar el transporte y validar interoperabilidad |
 | iOS/Xcode | Xcode 27.2 e iPhone 17 Simulator (iOS 27.2): app compilada y pantallas recorridas; capturas incluidas |
@@ -60,12 +61,14 @@ Completar `obtenido`, `dispositivo/versión` y evidencia solo tras ejecutar cada
 | Juego BLE, turno y duplicado | Requiere implementación BLE | Una jugada por secuencia | Pendiente |
 | TXT/JSON/XML/JPG, bloque grande | Requiere implementación BLE | Archivo verificado antes de publicar | Pendiente |
 | Hash incorrecto / cancelar / desconectar | Requiere implementación BLE | Temporal descartado; historial fallido/cancelado | Pendiente |
-| Web con B sin Internet | Requiere proxy BLE en A | Respuesta nueva solo si A tiene Internet; caché etiquetada | Pendiente |
+| Web simulada con A disponible/sin conexión | Consultar recurso de ejemplo; desconectar A y repetir | Mostrar respuesta nueva o caché identificada | AVD Pixel_4a: respuesta local 200 y copia de caché; capturas `evidencias/16_consulta_web_respuesta.png` y `17_consulta_web_cache.png` |
+| Web real con B sin Internet | Requiere proxy HTTPS por BLE en A | Sólo A accede a red; respuesta y caché etiquetadas | Pendiente de implementar el relay BLE real |
+| Borrado con biometría | Eliminar un archivo y autenticar | Diálogo del sistema; no borrar si se cancela | AVD Android 17: huella virtual aceptada; confirmación/resultado en `evidencias/18_biometria_confirmacion.png` y `19_biometria_autorizada.png` |
 
 ## Limitaciones y riesgos conocidos
 
-Este incremento no cubre todavía los tres ejercicios nuevos que necesitan Bluetooth ni biometría. No hay pruebas de interoperabilidad ni video. Antes de entregar: implementar los adaptadores BLE Android/iOS, validar lista permitida/redirects/tamaño/timeout del intermediario HTTPS, completar pruebas unitarias de lógica y de protocolo, documentar rechazo/revocación y terminar matriz con capturas o video de los flujos implementados. Usar PR por propósito, checks CI y revisiones ajenas según las reglas del curso.
+Este incremento ya protege el borrado con biometría del sistema y contiene una simulación local del visor web. Aún faltan los transportes BLE del juego, transferencia y relay HTTPS real; la simulación web no realiza llamadas de red. No hay pruebas de interoperabilidad ni video. Antes de entregar: implementar BLE Android/iOS, validar allowlist/redirecciones/tamaño/timeout del intermediario HTTPS, completar pruebas unitarias de lógica/protocolo y documentar rechazo/revocación.
 
 ## Registro de asistencia de IA
 
-Asistencia de IA para integrar la fuente existente de P4, añadir la UI de sensores y preparar configuración/documentación. Se corrigió el ámbito de servicios del juego y se añadió un timeout para informar si los sensores no envían datos. Validación: `flutter analyze`, APK debug y AVD Android; prueba temporal `integration_test` recorrió Archivos, sensor ausente, menú y tablero local en iPhone 17 Simulator. La prueba y sus dependencias temporales se retiraron después. La interoperabilidad BLE se validará una vez implementado el transporte.
+Asistencia de IA para integrar la fuente existente de P4, ajustar sensores, añadir autenticación del sistema al borrar y construir la vista web simulada. Se corrigió el ámbito de servicios del juego y se añadió un timeout de sensores. Validación: `flutter analyze`, APK debug, huella virtual en AVD Android, respuesta JSON local y caché sin conexión; prueba iOS temporal previa retirada. La interoperabilidad BLE y el relay HTTPS real siguen pendientes.

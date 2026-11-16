@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:path/path.dart' as p;
 
 import '../../core/errors/app_exception.dart';
@@ -7,6 +8,7 @@ import '../../core/services/file_service.dart';
 import '../../core/utils/formatters.dart';
 import '../../main.dart';
 import '../viewer/viewer_page.dart';
+import '../web/web_demo_page.dart';
 import 'file_actions.dart';
 import 'thumb_widget.dart';
 
@@ -148,14 +150,24 @@ class _BrowserViewState extends State<BrowserView> {
     final ok = await confirm(context,
         title: 'Eliminar',
         body: it.isDirectory
-            ? '¿Eliminar la carpeta "${it.name}" y todo su contenido? No se puede deshacer.'
-            : '¿Eliminar "${it.name}"? No se puede deshacer.');
+            ? '¿Eliminar la carpeta "${it.name}" y todo su contenido? No se puede deshacer. Después confirma con la huella o el bloqueo de pantalla del dispositivo.'
+            : '¿Eliminar "${it.name}"? No se puede deshacer. Después confirma con la huella o el bloqueo de pantalla del dispositivo.');
     if (!ok) return;
     try {
+      final authenticated = await LocalAuthentication().authenticate(
+        localizedReason: 'Confirma tu identidad para eliminar ${it.name}',
+        biometricOnly: false,
+        persistAcrossBackgrounding: true,
+      );
+      if (!authenticated) {
+        if (mounted) showInfo(context, 'No se eliminó el archivo.');
+        return;
+      }
       await s.files.delete(it.path);
       await s.prefs.forget(it.path);
     } catch (e) {
       if (mounted) showFailure(context, e);
+      return;
     }
     _reload();
   }
@@ -323,6 +335,13 @@ class _BrowserViewState extends State<BrowserView> {
         appBar: AppBar(
           title: const Text('Archivos'),
           actions: [
+            IconButton(
+              tooltip: 'Consulta web simulada',
+              icon: const Icon(Icons.public),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const WebDemoPage()),
+              ),
+            ),
             PopupMenuButton<String>(
               icon: const Icon(Icons.folder_special),
               tooltip: 'Ubicaciones',
