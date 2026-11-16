@@ -16,7 +16,7 @@ La lógica del gestor usa servicios Dart y almacenamiento privado. El juego usa 
 
 - Se reutilizó el gestor y Circuito Guinda de `p4_flutter_backup` (fuente original local de la Práctica 4): navegación, servicios, persistencia, visores y juego. En este repo quedan integrados bajo `lib/`.
 - Flutter y Dart se fijan como versión de trabajo en el README; `pubspec.lock` fija las versiones exactas de paquetes. No se incluye `local.properties`, artefactos de build ni claves de firma.
-- Se eligió Flutter, con UI compartida y adaptadores de sensores por `sensors_plus`. Min Android API 24. iOS requiere validar Xcode en macOS; no se afirma esa validación.
+- Se eligió Flutter, con UI compartida y adaptadores de sensores por `sensors_plus`. Min Android API 24. Xcode 27.2 compiló y ejecutó esta app en iPhone 17 Simulator (iOS 27.2).
 - El AVD esperado se llama `Pixel_4a`. El script `scripts/run_pixel4a.sh` genera la configuración local Flutter/Gradle, restaura deps y arranca el emulador.
 
 ## Contrato propuesto para el canal BLE (pendiente)
@@ -38,14 +38,14 @@ Cada mensaje será un frame UTF-8 JSON con campos obligatorios:
 | Gestor y juego P4 | Integrados; autosave local del juego |
 | Acelerómetro y giroscopio | Lecturas reportadas por el sistema, valor/unidad/instante/estado e interacción básica. En simulador pueden ser virtuales o no estar disponibles. |
 | Ausencia / pausa / reanudación sensores | Timeout/error informativo; streams se cancelan y se vuelven a abrir |
-| Biometría al proteger acción de archivo | Borrado protegido por `local_auth`; huella virtual del AVD aceptada y credencial del dispositivo ofrecida como alternativa |
-| Consulta web de demostración | Simulación local B→A con allowlist de dos rutas, estado/ID/tiempo, historial, favoritos y caché; no realiza HTTPS ni BLE |
+| Biometría al proteger acción de archivo | Borrado protegido por `local_auth`; huella virtual Android aceptada. Face ID exitoso/cancelado en iOS pendiente de iPhone real |
+| Consulta web de demostración | Simulación local B→A con allowlist de dos rutas, estado/ID/tiempo, historial, favoritos y caché; no realiza HTTPS ni BLE. Respuesta/caché verificadas en Android e iOS |
 | Juego sincronizado por Bluetooth, roles, secuencia/deduplicación | Pendiente; juego actual es local |
 | Transferencia TXT/JSON/XML/JPG por Bluetooth, bloques, SHA-256 | Pendiente |
 | Cliente HTTPS mediado por Bluetooth y controles anti SSRF | La pantalla demo valida esquema/dominio/ruta con fixtures locales; relay BLE y peticiones HTTPS reales pendientes |
 | Android Pixel 4a | `flutter run` compiló, instaló y abrió en AVD `Pixel_4a`; gestor, visor, ajustes, sensores y juego local recorridos. Capturas en `evidencias/`. |
 | BLE entre Android e iOS | Pendiente de implementar el transporte y validar interoperabilidad |
-| iOS/Xcode | Xcode 27.2 e iPhone 17 Simulator (iOS 27.2): app compilada y pantallas recorridas; capturas incluidas |
+| iOS/Xcode | Xcode 27.2 e iPhone 17 Simulator (iOS 27.2): app compilada y pantallas recorridas, incluidas respuesta/caché web; capturas incluidas. Face ID requiere teléfono real |
 
 ## Matriz de pruebas y evidencias
 
@@ -61,9 +61,9 @@ Completar `obtenido`, `dispositivo/versión` y evidencia solo tras ejecutar cada
 | Juego BLE, turno y duplicado | Requiere implementación BLE | Una jugada por secuencia | Pendiente |
 | TXT/JSON/XML/JPG, bloque grande | Requiere implementación BLE | Archivo verificado antes de publicar | Pendiente |
 | Hash incorrecto / cancelar / desconectar | Requiere implementación BLE | Temporal descartado; historial fallido/cancelado | Pendiente |
-| Web simulada con A disponible/sin conexión | Consultar recurso de ejemplo; desconectar A y repetir | Mostrar respuesta nueva o caché identificada | AVD Pixel_4a: respuesta local 200 y copia de caché; capturas `evidencias/16_consulta_web_respuesta.png` y `17_consulta_web_cache.png` |
+| Web simulada con A disponible/sin conexión | Consultar recurso de ejemplo; desconectar A y repetir | Mostrar respuesta nueva o caché identificada | Android AVD: capturas `16`/`17`; iPhone 17 Simulator: `evidencias/ios/ios_web_respuesta.png` y `ios_web_cache.png` |
 | Web real con B sin Internet | Requiere proxy HTTPS por BLE en A | Sólo A accede a red; respuesta y caché etiquetadas | Pendiente de implementar el relay BLE real |
-| Borrado con biometría | Eliminar un archivo y autenticar | Diálogo del sistema; no borrar si se cancela | AVD Android 17: huella virtual aceptada; confirmación/resultado en `evidencias/18_biometria_confirmacion.png` y `19_biometria_autorizada.png` |
+| Borrado con biometría | Eliminar un archivo y autenticar | Diálogo del sistema; no borrar si se cancela | Android AVD: huella virtual aceptada, capturas `18`/`19`. iOS Face ID exitoso/cancelado pendiente en teléfono real |
 
 ## Limitaciones y riesgos conocidos
 
@@ -71,4 +71,4 @@ Este incremento ya protege el borrado con biometría del sistema y contiene una 
 
 ## Registro de asistencia de IA
 
-Asistencia de IA para integrar la fuente existente de P4, ajustar sensores, añadir autenticación del sistema al borrar y construir la vista web simulada. Se corrigió el ámbito de servicios del juego y se añadió un timeout de sensores. Validación: `flutter analyze`, APK debug, huella virtual en AVD Android, respuesta JSON local y caché sin conexión; prueba iOS temporal previa retirada. La interoperabilidad BLE y el relay HTTPS real siguen pendientes.
+Asistencia de IA para integrar la fuente existente de P4, ajustar sensores, añadir autenticación del sistema al borrar y construir la vista web simulada. Se corrigió el ámbito de servicios del juego y se añadió un timeout de sensores. Validación: `flutter analyze`, APK debug, huella virtual en AVD Android, respuesta JSON local y caché sin conexión en Android/iOS; prueba iOS temporal retirada. Face ID en dispositivo iOS. La interoperabilidad BLE y el relay HTTPS real siguen pendientes.

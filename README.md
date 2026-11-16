@@ -83,13 +83,17 @@ La app también se ejecutó en iPhone 17 Simulator con iOS 27.2 usando Xcode 27.
 
 ![Estado sin lecturas de sensores en el simulador iOS](evidencias/ios/ios_sensores.png)
 
+![Consulta web simulada en iOS con respuesta 200 y JSON local](evidencias/ios/ios_web_respuesta.png)
+
+![Consulta web simulada en iOS recuperada desde caché con A desconectado](evidencias/ios/ios_web_cache.png)
+
 ![Menú de Circuito Guinda en iPhone 17 Simulator](evidencias/ios/ios_juego.png)
 
 ![Tablero local de Circuito Guinda en iPhone 17 Simulator](evidencias/ios/ios_partida_local.png)
 
 ## Estado de los requisitos de Práctica 6
 
-El gestor y el juego anterior se integraron y la lectura de sensores está conectada al sistema. `flutter analyze`, compilación APK y arranque en el AVD Pixel_4a quedaron verificados. La app también compiló y se recorrió en el simulador iPhone 17 de Xcode 27.2. La biometría para eliminar está implementada y verificada en el AVD Android. La consulta web disponible es una simulación local; faltan el relay HTTPS real por BLE, el juego sincronizado y la transferencia entre dispositivos. La arquitectura y matriz de pendientes están en [`README for IAS/README.md`](README%20for%20IAS/README.md).
+El gestor y el juego anterior se integraron y la lectura de sensores está conectada al sistema. `flutter analyze`, compilación APK y arranque en el AVD Pixel_4a quedaron verificados. La app también compiló y se recorrió en el simulador iPhone 17 de Xcode 27.2; allí se verificaron los flujos web de respuesta y caché. La biometría para eliminar está implementada y verificada en el AVD Android; la autorización Face ID en iOS queda pendiente de probar en un iPhone porque este entorno no incluye la app gráfica Simulator para enrolar/confirmar Face ID. La consulta web disponible es una simulación local; faltan el relay HTTPS real por BLE, el juego sincronizado y la transferencia entre dispositivos. La arquitectura y matriz de pendientes están en [`README for IAS/README.md`](README%20for%20IAS/README.md).
 
 ### Arquitectura y decisiones actuales
 
@@ -128,14 +132,14 @@ Completar el resultado, dispositivo/versión y evidencia solo después de ejecut
 | Sensor ausente | Abrir Sensores en simulador iOS | Mensaje informativo, app estable | iPhone 17 Simulator: sin lecturas, aviso de ausencia verificado |
 | Pausa y reanudación | Enviar la app a segundo plano y volver | Streams detenidos y retomados | Implementado; prueba manual pendiente |
 | Permiso denegado | Probar permisos aplicables | Explicación y salida segura | Sensores no requieren permiso móvil; permisos BLE aún no implementados |
-| Borrado protegido por biometría | Eliminar un archivo de ejemplo y autenticar | El sistema autoriza con huella o credencial alternativa | AVD Pixel_4a Android 17: huella virtual aceptada; confirmación y resultado en `evidencias/18_biometria_confirmacion.png` y `19_biometria_autorizada.png` |
+| Borrado protegido por biometría | Eliminar un archivo de ejemplo y autenticar | El sistema autoriza con huella o credencial alternativa | Android AVD Pixel_4a: huella virtual aceptada; evidencia `18`/`19`. iOS: Face ID pendiente en iPhone real; el build del simulador no valida autenticación exitosa |
 | Juego BLE, turno y duplicado | Requiere transporte implementado | Una jugada por secuencia | Pendiente |
 | TXT/JSON/XML/JPG y archivo grande | Requiere transferencia BLE | Integridad antes de guardar final | Pendiente |
 | Hash incorrecto, cancelar y desconectar | Requiere transferencia BLE | Temporal descartado; estado fallido/cancelado | Pendiente |
-| Consulta web simulada con A disponible/sin conexión | Consultar el fixture y desconectar A | Estado, ID, tiempo y caché identificada | AVD Pixel_4a: respuesta local y copia de caché; `evidencias/16_consulta_web_respuesta.png` y `17_consulta_web_cache.png` |
+| Consulta web simulada con A disponible/sin conexión | Consultar el fixture y desconectar A | Estado, ID, tiempo y caché identificada | Android AVD: capturas `16`/`17`; iPhone 17 Simulator: `evidencias/ios/ios_web_respuesta.png` y `ios_web_cache.png` |
 | Consulta web real con B sin Internet | Requiere proxy HTTPS por BLE en A | Red solo a través de A; caché identificada | Pendiente; la pantalla actual usa fixtures locales y no BLE |
 | Android en Pixel 4a | Ejecutar `./scripts/run_pixel4a.sh` | Instala y abre la app | Verificado en AVD Pixel_4a de este equipo |
-| iOS | Ejecutar en iPhone 17 Simulator | UI compartida inicia y muestra pantallas | Xcode 27.2 / iOS 27.2; recorrido y capturas incluidos |
+| iOS | Ejecutar en iPhone 17 Simulator | UI compartida inicia y muestra pantallas | Xcode 27.2 / iOS 27.2; gestor, juego, sensores, consulta web y caché capturados. Face ID real pendiente en iPhone |
 
 ### Pendientes para completar la práctica
 
@@ -153,7 +157,7 @@ Completar el resultado, dispositivo/versión y evidencia solo después de ejecut
 - Web simulada: se recorrió respuesta JSON con estado 200/ID/tiempo y recuperación etiquetada desde caché con el relay A apagado.
 - `./scripts/run_pixel4a.sh`: compiló, instaló y abrió la app en el AVD `Pixel_4a` de este equipo. En la prueba manual se recorrieron gestor, ejemplos, visor Markdown, visor JSON, visor de imagen, ajustes de tema, sensores, menú del juego, inicio de partida y rotación de una pieza. Se corrigió un error al abrir la ruta del tablero: el proveedor de servicios del juego ahora queda por encima del navegador principal.
 - `flutter test`: no ejecutado en este avance.
-- En Android, los flujos se recorrieron manualmente con el emulador y `adb`. Para capturar iOS se usó una prueba temporal y dependencias SDK, retiradas después.
+- En Android, los flujos se recorrieron manualmente con el emulador y `adb`. Para capturar iOS se usó una prueba temporal y dependencias SDK, retiradas después; respuesta y caché web quedaron verificadas. Face ID exitoso/cancelado requiere validación en iPhone real.
 - iOS: `flutter drive` temporal ejecutado en iPhone 17 Simulator (iOS 27.2 / Xcode 27.2); capturas revisadas y guardadas.
 - Se usó asistencia de IA para integrar la fuente de la Práctica 4, añadir la pantalla de sensores y preparar configuración/documentación. El estudiante debe revisar el código, ejecutar las pruebas pendientes y reportar cualquier error encontrado.
 
@@ -177,7 +181,7 @@ Flutter 3.47.9 / Dart 3.13.7. Dependencias directas adicionales a Flutter SDK: `
 
 Flutter app for Android 24+ and iOS 15+, combining the Practice 4 file manager and Circuito Guinda game with accelerometer and gyroscope readings reported by the operating system. For a clean Android checkout, install Flutter 3.47.9, Android Studio/SDK, and an AVD named `Pixel_4a`, then run `./scripts/run_pixel4a.sh`. Dependencies are locked in `pubspec.lock`; machine-specific SDK paths and signing keys are not committed.
 
-The app was built and exercised in an iPhone 17 simulator (iOS 27.2 / Xcode 27.2). File deletion uses system authentication, verified with the Android emulator's virtual fingerprint. The web view is an offline fixture simulation; BLE multiplayer, file transfer, and a real Bluetooth-relayed HTTPS client remain unimplemented. See [`README for IAS/README.md`](README%20for%20IAS/README.md) for architecture, protocol proposal, limitations, and the verification matrix.
+The app was built and exercised in an iPhone 17 simulator (iOS 27.2 / Xcode 27.2), including the simulated web response and cache flows. File deletion uses system authentication, verified with the Android emulator's virtual fingerprint; iOS Face ID remains to be validated on a real iPhone. The web view is an offline fixture simulation; BLE multiplayer, file transfer, and a real Bluetooth-relayed HTTPS client remain unimplemented. See [`README for IAS/README.md`](README%20for%20IAS/README.md) for architecture, protocol proposal, limitations, and the verification matrix.
 
 ## Uso de IA
 
